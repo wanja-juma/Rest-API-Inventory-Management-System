@@ -72,3 +72,37 @@ def test_post_missing_fields(client):
 
     assert response.status_code == 400
     assert response.get_json()["error"] == "Missing required fields"
+
+
+# PATCH
+
+def test_patch_item(client):
+
+    response = client.patch(
+        "/inventory/1",
+        json={
+            "price": 10.50,
+            "stock": 99
+        }
+    )
+
+    assert response.status_code == 200
+
+    product = response.get_json()
+
+    assert product["price"] == 10.50
+    assert product["stock"] == 99
+
+# PATCH INVALID ITEM
+
+def test_patch_invalid_item(client):
+
+    response = client.patch(
+        "/inventory/999",
+        json={
+            "price": 10
+        }
+    )
+
+    assert response.status_code == 404
+    assert response.get_json()["error"] == "Item not found"
