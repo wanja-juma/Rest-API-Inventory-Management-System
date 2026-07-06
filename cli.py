@@ -47,3 +47,26 @@ def view_inventory():
 
     except requests.ConnectionError:
         print("Cannot connect to Flask server.")
+
+        def view_product():
+    product_id = input("Enter product ID: ")
+
+    try:
+        response = requests.get(
+            f"{BASE_URL}/inventory/{product_id}"
+        )
+
+        if response.status_code == 200:
+            item = response.json()
+
+            print("\nProduct Details")
+            print("-" * 40)
+
+            for key, value in item.items():
+                print(f"{key}: {value}")
+
+        else:
+            print(response.json()["error"])
+
+    except requests.ConnectionError:
+        print("Server unavailable.")
