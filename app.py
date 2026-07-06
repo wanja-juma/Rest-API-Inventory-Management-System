@@ -41,3 +41,39 @@ def get_item(item_id):
         return jsonify({"error": "Item not found"}), 404
 
     return jsonify(item), 200
+
+# CREATE ITEM
+
+@app.route("/inventory", methods=["POST"])
+def add_item():
+
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "Missing JSON body"}), 400
+
+    required = ["barcode", "price", "stock"]
+
+    if not all(field in data for field in required):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    product = fetch_product_by_barcode(data["barcode"])
+
+    if product is None:
+        return jsonify({
+            "error": "Product not found on OpenFoodFacts"
+        }), 404
+
+    item = {
+        "id": next_id(),
+        "barcode": data["barcode"],
+        "product_name": product["product_name"],
+        "brand": product["brand"],
+        "ingredients": product["ingredients"],
+        "price": data["price"],
+        "stock": data["stock"]
+    }
+
+    inventory.append(item)
+
+    return jsonify(item), 201
