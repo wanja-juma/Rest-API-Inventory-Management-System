@@ -48,7 +48,7 @@ def view_inventory():
     except requests.ConnectionError:
         print("Cannot connect to Flask server.")
 
-        def view_product():
+def view_product():
     product_id = input("Enter product ID: ")
 
     try:
@@ -70,3 +70,36 @@ def view_inventory():
 
     except requests.ConnectionError:
         print("Server unavailable.")
+    
+
+def add_product():
+    barcode = input("Barcode: ")
+
+    try:
+        price = float(input("Price: "))
+        stock = int(input("Stock: "))
+    except ValueError:
+        print("Invalid number entered.")
+        return
+
+    payload = {
+        "barcode": barcode,
+        "price": price,
+        "stock": stock
+    }
+
+    try:
+        response = requests.post(
+            f"{BASE_URL}/inventory",
+            json=payload
+        )
+
+        if response.status_code == 201:
+            print("\nProduct successfully added.")
+            print(response.json())
+
+        else:
+            print(response.json()["error"])
+
+    except requests.ConnectionError:
+        print("Cannot connect to server.")
