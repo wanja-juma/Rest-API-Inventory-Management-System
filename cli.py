@@ -1,0 +1,49 @@
+import requests
+
+BASE_URL = "http://127.0.0.1:5000"
+
+
+def display_menu():
+    print("\n" + "=" * 50)
+    print(" Inventory Management System ")
+    print("=" * 50)
+    print("1. View Inventory")
+    print("2. View Product")
+    print("3. Add Product")
+    print("4. Update Product")
+    print("5. Delete Product")
+    print("6. Search OpenFoodFacts by Barcode")
+    print("7. Search OpenFoodFacts by Name")
+    print("8. Exit")
+
+
+def view_inventory():
+    try:
+        response = requests.get(f"{BASE_URL}/inventory")
+
+        if response.status_code == 200:
+            items = response.json()
+
+            if not items:
+                print("\nInventory is empty.")
+                return
+
+            print("\nCurrent Inventory")
+            print("-" * 70)
+
+            for item in items:
+                print(
+                    f"ID: {item['id']}"
+                    f"\nProduct: {item['product_name']}"
+                    f"\nBrand: {item['brand']}"
+                    f"\nPrice: ${item['price']}"
+                    f"\nStock: {item['stock']}"
+                    f"\nBarcode: {item['barcode']}"
+                )
+                print("-" * 70)
+
+        else:
+            print("Unable to retrieve inventory.")
+
+    except requests.ConnectionError:
+        print("Cannot connect to Flask server.")
