@@ -123,5 +123,42 @@ def delete_item(item_id):
         "message": "Item deleted successfully"
     }), 200
 
+# SEARCH BY BARCODE
+
+@app.route("/search/barcode/<barcode>", methods=["GET"])
+def search_barcode(barcode):
+
+    product = fetch_product_by_barcode(barcode)
+
+    if product is None:
+        return jsonify({"error": "Product not found"}), 404
+
+    return jsonify(product), 200
+
+# SEARCH BY PRODUCT NAME
+
+@app.route("/search/name", methods=["GET"])
+def search_name():
+
+    name = request.args.get("name")
+
+    if not name:
+        return jsonify({
+            "error": "Missing product name"
+        }), 400
+
+    products = fetch_product_by_name(name)
+
+    if not products:
+        return jsonify({
+            "error": "Product not found"
+        }), 404
+
+    return jsonify(products), 200
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 
