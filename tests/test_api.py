@@ -106,3 +106,22 @@ def test_patch_invalid_item(client):
 
     assert response.status_code == 404
     assert response.get_json()["error"] == "Item not found"
+
+
+# DELETE
+
+def test_delete_item(client):
+
+    response = client.delete("/inventory/3")
+
+    assert response.status_code == 200
+    assert response.get_json()["message"] == "Item deleted successfully"
+
+# DELETE INVALID ITEM
+
+def test_delete_invalid_item(client):
+
+    response = client.delete("/inventory/999")
+
+    assert response.status_code == 404
+    assert response.get_json()["error"] == "Item not found"
