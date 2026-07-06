@@ -104,3 +104,24 @@ def update_item(item_id):
 
     return jsonify(item), 200
 
+# DELETE ITEM
+
+@app.route("/inventory/<int:item_id>", methods=["DELETE"])
+def delete_item(item_id):
+
+    item = next(
+        (i for i in inventory if i["id"] == item_id),
+        None
+    )
+
+    if item is None:
+        return jsonify({"error": "Item not found"}), 404
+
+    inventory.remove(item)
+
+    return jsonify({
+        "message": "Item deleted successfully"
+    }), 200
+
+
+
