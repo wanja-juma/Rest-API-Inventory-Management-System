@@ -146,3 +146,20 @@ def update_product():
 
     except requests.ConnectionError:
         print("Cannot connect to server.")
+
+
+def delete_product():
+    product_id = input("Enter product ID: ")
+
+    try:
+        response = requests.delete(
+            f"{BASE_URL}/inventory/{product_id}"
+        )
+
+        if response.status_code == 200:
+            print(response.json()["message"])
+        else:
+            print(response.json()["error"])
+
+    except requests.ConnectionError:
+        print("Server unavailable.")
