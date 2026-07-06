@@ -103,3 +103,46 @@ def add_product():
 
     except requests.ConnectionError:
         print("Cannot connect to server.")
+
+def update_product():
+    product_id = input("Product ID: ")
+
+    update_data = {}
+
+    price = input("New price (leave blank to skip): ")
+
+    if price:
+        try:
+            update_data["price"] = float(price)
+        except ValueError:
+            print("Invalid price.")
+            return
+
+    stock = input("New stock (leave blank to skip): ")
+
+    if stock:
+        try:
+            update_data["stock"] = int(stock)
+        except ValueError:
+            print("Invalid stock.")
+            return
+
+    if not update_data:
+        print("Nothing to update.")
+        return
+
+    try:
+        response = requests.patch(
+            f"{BASE_URL}/inventory/{product_id}",
+            json=update_data
+        )
+
+        if response.status_code == 200:
+            print("Product updated successfully.")
+            print(response.json())
+
+        else:
+            print(response.json()["error"])
+
+    except requests.ConnectionError:
+        print("Cannot connect to server.")
