@@ -2,13 +2,7 @@ import requests
 
 from config import OPENFOODFACTS_URL
 
-
 def fetch_product_by_name(name):
-    """
-    Search OpenFoodFacts for products matching the given name.
-    Returns a list of matching products.
-    """
-
     params = {
         "search_terms": name,
         "search_simple": 1,
