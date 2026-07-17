@@ -1,72 +1,68 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
+
+from helpers import fetch_product_by_name
+
 import requests
 
-from helpers import fetch_product_by_barcode
+# SUCCESSFUL SEARCH
 
+@patch("helpers.requests.get")
+def test_fetch_product_by_name_success(mock_get):
 
-class MockSuccessResponse:
+    mock_response = Mock()
 
-    @staticmethod
-    def json():
+    mock_response.raise_for_status.return_value = None
 
-        return {
-            "status": 1,
-            "product": {
-                "product_name": "Sprite",
-                "brands": "Coca Cola",
-                "ingredients_text": "Water, Sugar"
+    mock_response.json.return_value = {
+        "products": [
+            {
+                "product_name": "Milk",
+                "brands": "Brookside",
+                "ingredients_text": "Milk",
+                "code": "123456789"
             }
-        }
+        ]
+    }
 
-    def raise_for_status(self):
-        pass
+    mock_get.return_value = mock_response
 
+    result = fetch_product_by_name("milk")
 
-class MockNotFoundResponse:
+    assert len(result) == 1
 
-    @staticmethod
-    def json():
+    assert result[0]["product_name"] == "Milk"
+    assert result[0]["brand"] == "Brookside"
+    assert result[0]["ingredients"] == "Milk"
+    assert result[0]["barcode"] == "123456789"
 
-        return {
-            "status": 0
-        }
-
-    def raise_for_status(self):
-        pass
-
+# NO PRODUCTS FOUND
 
 @patch("helpers.requests.get")
-def test_fetch_barcode_success(mock_get):
+def test_fetch_product_by_name_not_found(mock_get):
 
-    mock_get.return_value = MockSuccessResponse()
+    mock_response = Mock()
 
-    product = fetch_product_by_barcode(
-        "5449000000996"
-    )
+    mock_response.raise_for_status.return_value = None
 
-    assert product["product_name"] == "Sprite"
-    assert product["brand"] == "Coca Cola"
+    mock_response.json.return_value = {
+        "products": []
+    }
 
+    mock_get.return_value = mock_response
 
-@patch("helpers.requests.get")
-def test_fetch_barcode_not_found(mock_get):
+    result = fetch_product_by_name("unknown")
 
-    mock_get.return_value = MockNotFoundResponse()
+    assert result == []
 
-    product = fetch_product_by_barcode(
-        "000000000"
-    )
-
-    assert product is None
-
+# REQUEST EXCEPTION
 
 @patch("helpers.requests.get")
-def test_fetch_barcode_request_exception(mock_get):
+def test_fetch_product_by_name_request_exception(mock_get):
 
-    mock_get.side_effect = requests.RequestException()
-
-    product = fetch_product_by_barcode(
-        "5449000000996"
+    mock_get.side_effect = requests.RequestException(
+        "Connection Error"
     )
 
-    assert product is None
+    result = fetch_product_by_name("milk")
+
+    assert result == []

@@ -1,103 +1,192 @@
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
-import cli
+from cli import (
+    view_inventory,
+    view_product,
+    add_product,
+    update_product,
+    delete_product,
+    search_name
+)
 
-
-class MockInventoryResponse:
-
-    status_code = 200
-
-    def json(self):
-
-        return [
-            {
-                "id": 1,
-                "product_name": "Nutella",
-                "brand": "Ferrero",
-                "price": 7.99,
-                "stock": 20,
-                "barcode": "3017620422003"
-            }
-        ]
-
+# VIEW INVENTORY
 
 @patch("cli.requests.get")
-def test_view_inventory(mock_get):
+def test_view_inventory(mock_get, capsys):
 
-    mock_get.return_value = MockInventoryResponse()
-
-    cli.view_inventory()
-
-    assert mock_get.called
-
-
-@patch("cli.requests.post")
-@patch("builtins.input")
-def test_add_product(mock_input, mock_post):
-
-    mock_input.side_effect = [
-        "3017620422003",
-        "7.99",
-        "25"
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = [
+        {
+            "id": 1,
+            "product_name": "Milk",
+            "brand": "Brookside",
+            "ingredients": "Milk",
+            "price": 65.0,
+            "stock": 20
+        }
     ]
+
+    view_inventory()
+
+    captured = capsys.readouterr()
+
+    assert "Milk" in captured.out
+    assert "Brookside" in captured.out
+
+# EMPTY INVENTORY
+
+@patch("cli.requests.get")
+def test_view_empty_inventory(mock_get, capsys):
+
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = []
+
+    view_inventory()
+
+    captured = capsys.readouterr()
+
+    assert "Inventory is empty." in captured.out
+
+# VIEW PRODUCT
+
+@patch("builtins.input", return_value="1")
+@patch("cli.requests.get")
+def test_view_product(mock_get, mock_input, capsys):
+
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "id": 1,
+        "product_name": "Milk",
+        "brand": "Brookside",
+        "ingredients": "Milk",
+        "price": 65.0,
+        "stock": 20
+    }
+
+    view_product()
+
+    captured = capsys.readouterr()
+
+    assert "Milk" in captured.out
+    assert "Brookside" in captured.out
+
+# ADD PRODUCT
+
+@patch(
+    "builtins.input",
+    side_effect=[
+        "Milk",
+        "Brookside",
+        "Milk",
+        "65",
+        "20"
+    ]
+)
+@patch("cli.requests.post")
+def test_add_product(mock_post, mock_input, capsys):
 
     mock_post.return_value.status_code = 201
+    mock_post.return_value.json.return_value = {
+        "id": 1,
+        "product_name": "Milk",
+        "brand": "Brookside",
+        "ingredients": "Milk",
+        "price": 65.0,
+        "stock": 20
+    }
 
-    cli.add_product()
+    add_product()
 
-    assert mock_post.called
+    captured = capsys.readouterr()
 
+    assert "Product added successfully." in captured.out
 
-@patch("cli.requests.patch")
-@patch("builtins.input")
-def test_update_product(mock_input, mock_patch):
+# UPDATE PRODUCT
 
-    mock_input.side_effect = [
+@patch(
+    "builtins.input",
+    side_effect=[
         "1",
-        "9.99",
-        "50"
+        "",
+        "",
+        "",
+        "80",
+        "30"
     ]
+)
+@patch("cli.requests.patch")
+def test_update_product(mock_patch, mock_input, capsys):
 
     mock_patch.return_value.status_code = 200
+    mock_patch.return_value.json.return_value = {
+        "id": 1,
+        "product_name": "Milk",
+        "brand": "Brookside",
+        "ingredients": "Milk",
+        "price": 80.0,
+        "stock": 30
+    }
 
-    cli.update_product()
+    update_product()
 
-    assert mock_patch.called
+    captured = capsys.readouterr()
+
+    assert "Product updated successfully." in captured.out
+
+# DELETE PRODUCT
 
 
+@patch("builtins.input", return_value="1")
 @patch("cli.requests.delete")
-@patch("builtins.input")
-def test_delete_product(mock_input, mock_delete):
-
-    mock_input.return_value = "1"
+def test_delete_product(mock_delete, mock_input, capsys):
 
     mock_delete.return_value.status_code = 200
+    mock_delete.return_value.json.return_value = {
+        "message": "Product deleted successfully"
+    }
 
-    cli.delete_product()
+    delete_product()
 
-    assert mock_delete.called
+    captured = capsys.readouterr()
 
-class MockBarcodeResponse:
-     
-    status_code = 200
+    assert "Product deleted successfully" in captured.out
 
-    def json(self):
-        return {
-            "product_name": "Nutella",
-            "brand": "Ferrero",
-            "ingredients": "Sugar, Palm Oil",
-            "barcode": "3017620422003"
-        }
+# SEARCH OPENFOODFACTS
 
-
+@patch("builtins.input", return_value="milk")
 @patch("cli.requests.get")
-@patch("builtins.input")
-def test_search_barcode(mock_input, mock_get):
+def test_search_name(mock_get, mock_input, capsys):
 
-    mock_input.return_value = "3017620422003"
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = [
+        {
+            "product_name": "Milk",
+            "brand": "Brookside",
+            "ingredients": "Milk",
+            "barcode": "123456789"
+        }
+    ]
 
-    mock_get.return_value = MockBarcodeResponse()
+    search_name()
 
-    cli.search_barcode()
+    captured = capsys.readouterr()
 
-    assert mock_get.called
+    assert "Milk" in captured.out
+    assert "Brookside" in captured.out
+
+# SEARCH NOT FOUND
+
+@patch("builtins.input", return_value="unknown")
+@patch("cli.requests.get")
+def test_search_not_found(mock_get, mock_input, capsys):
+
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.json.return_value = {
+        "error": "No matching products found."
+    }
+
+    search_name()
+
+    captured = capsys.readouterr()
+
+    assert "No matching products found." in captured.out

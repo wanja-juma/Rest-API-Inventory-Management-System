@@ -1,7 +1,5 @@
-OPENFOODFACTS_BARCODE_URL = (
-    "https://world.openfoodfacts.org/api/v0/product/{}.json"
-)
+# config.py
 
-OPENFOODFACTS_NAME_URL = (
+OPENFOODFACTS_URL = (
     "https://world.openfoodfacts.org/cgi/search.pl"
 )

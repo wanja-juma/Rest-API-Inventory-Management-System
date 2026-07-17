@@ -4,24 +4,25 @@ BASE_URL = "http://127.0.0.1:5000"
 
 
 def display_menu():
-    print("\n" + "=" * 50)
-    print(" Inventory Management System ")
-    print("=" * 50)
+    print("=== Inventory Management System ===")
     print("1. View Inventory")
     print("2. View Product")
     print("3. Add Product")
     print("4. Update Product")
     print("5. Delete Product")
-    print("6. Search OpenFoodFacts by Barcode")
-    print("7. Search OpenFoodFacts by Name")
-    print("8. Exit")
+    print("6. Search OpenFoodFacts")
+    print("7. Exit")
 
+
+# View all products
 
 def view_inventory():
+
     try:
         response = requests.get(f"{BASE_URL}/inventory")
 
         if response.status_code == 200:
+
             items = response.json()
 
             if not items:
@@ -32,14 +33,11 @@ def view_inventory():
             print("-" * 70)
 
             for item in items:
-                print(
-                    f"ID: {item['id']}"
-                    f"\nProduct: {item['product_name']}"
-                    f"\nBrand: {item['brand']}"
-                    f"\nPrice: ${item['price']}"
-                    f"\nStock: {item['stock']}"
-                    f"\nBarcode: {item['barcode']}"
-                )
+                print(f"ID: {item['id']}")
+                print(f"Product: {item['product_name']}")
+                print(f"Brand: {item['brand']}")
+                print(f"Price: Ksh.{item['price']}")
+                print(f"Stock: {item['stock']}")
                 print("-" * 70)
 
         else:
@@ -48,8 +46,11 @@ def view_inventory():
     except requests.ConnectionError:
         print("Cannot connect to Flask server.")
 
+# View single product
+
 def view_product():
-    product_id = input("Enter product ID: ")
+
+    product_id = input("Enter Product ID: ")
 
     try:
         response = requests.get(
@@ -57,33 +58,42 @@ def view_product():
         )
 
         if response.status_code == 200:
-            item = response.json()
+
+            product = response.json()
 
             print("\nProduct Details")
-            print("-" * 40)
+            print("-" * 50)
 
-            for key, value in item.items():
+            for key, value in product.items():
                 print(f"{key}: {value}")
 
         else:
             print(response.json()["error"])
 
     except requests.ConnectionError:
-        print("Server unavailable.")
-    
+        print("Cannot connect to Flask server.")
+
+# Add product
+
 
 def add_product():
-    barcode = input("Barcode: ")
+
+    product_name = input("Product Name: ")
+    brand = input("Brand: ")
+    ingredients = input("Ingredients: ")
 
     try:
         price = float(input("Price: "))
         stock = int(input("Stock: "))
+
     except ValueError:
         print("Invalid number entered.")
         return
 
     payload = {
-        "barcode": barcode,
+        "product_name": product_name,
+        "brand": brand,
+        "ingredients": ingredients,
         "price": price,
         "stock": stock
     }
@@ -95,21 +105,48 @@ def add_product():
         )
 
         if response.status_code == 201:
-            print("\nProduct successfully added.")
+
+            print("\nProduct added successfully.")
             print(response.json())
 
         else:
             print(response.json()["error"])
 
     except requests.ConnectionError:
-        print("Cannot connect to server.")
+        print("Cannot connect to Flask server.")
+
+# Update product
 
 def update_product():
+
     product_id = input("Product ID: ")
 
     update_data = {}
 
-    price = input("New price (leave blank to skip): ")
+    product_name = input(
+        "New Product Name (leave blank to skip): "
+    )
+
+    if product_name:
+        update_data["product_name"] = product_name
+
+    brand = input(
+        "New Brand (leave blank to skip): "
+    )
+
+    if brand:
+        update_data["brand"] = brand
+
+    ingredients = input(
+        "New Ingredients (leave blank to skip): "
+    )
+
+    if ingredients:
+        update_data["ingredients"] = ingredients
+
+    price = input(
+        "New Price (leave blank to skip): "
+    )
 
     if price:
         try:
@@ -118,7 +155,9 @@ def update_product():
             print("Invalid price.")
             return
 
-    stock = input("New stock (leave blank to skip): ")
+    stock = input(
+        "New Stock (leave blank to skip): "
+    )
 
     if stock:
         try:
@@ -132,102 +171,101 @@ def update_product():
         return
 
     try:
+
         response = requests.patch(
             f"{BASE_URL}/inventory/{product_id}",
             json=update_data
         )
 
         if response.status_code == 200:
-            print("Product updated successfully.")
+
+            print("\nProduct updated successfully.")
             print(response.json())
 
         else:
             print(response.json()["error"])
 
     except requests.ConnectionError:
-        print("Cannot connect to server.")
+        print("Cannot connect to Flask server.")
+
+
+# Delete product
 
 
 def delete_product():
-    product_id = input("Enter product ID: ")
+
+    product_id = input("Enter Product ID: ")
 
     try:
+
         response = requests.delete(
             f"{BASE_URL}/inventory/{product_id}"
         )
 
         if response.status_code == 200:
+
             print(response.json()["message"])
+
         else:
+
             print(response.json()["error"])
 
     except requests.ConnectionError:
-        print("Server unavailable.")
+        print("Cannot connect to Flask server.")
 
-
-def search_barcode():
-    barcode = input("Barcode: ")
-
-    try:
-        response = requests.get(
-            f"{BASE_URL}/search/barcode/{barcode}"
-        )
-
-        if response.status_code == 200:
-            product = response.json()
-
-            print("\nProduct Found")
-            print("-" * 50)
-
-            for key, value in product.items():
-                print(f"{key}: {value}")
-
-        else:
-            print(response.json()["error"])
-
-    except requests.ConnectionError:
-        print("Cannot connect to server.")
+# Search openfoodfacts
 
 
 def search_name():
-    name = input("Product name: ")
+
+    name = input("Enter Product Name: ")
 
     try:
+
         response = requests.get(
             f"{BASE_URL}/search/name",
             params={"name": name}
         )
 
         if response.status_code == 200:
+
             products = response.json()
 
-            if not products:
-                print("No products found.")
-                return
+            print("\nProducts Found")
+            print("-" * 70)
 
-            print(f"\nFound {len(products)} products\n")
+            for product in products:
 
-            for product in products[:5]:
-                print("-" * 60)
                 print(
-                    f"Name: {product.get('product_name', 'Unknown')}"
+                    f"Name: {product['product_name']}"
                 )
                 print(
-                    f"Brand: {product.get('brands', 'Unknown')}"
+                    f"Brand: {product['brand']}"
                 )
                 print(
-                    f"Barcode: {product.get('code', 'N/A')}"
+                    f"Ingredients: {product['ingredients']}"
                 )
+                print(
+                    f"Barcode: {product['barcode']}"
+                )
+
+                print("-" * 70)
 
         else:
+
             print(response.json()["error"])
 
     except requests.ConnectionError:
-        print("Server unavailable.")
+        print("Cannot connect to Flask server.")
+
+
+# Main menu
 
 
 def main():
+
     while True:
+
         display_menu()
 
         choice = input("\nChoose an option: ")
@@ -248,12 +286,9 @@ def main():
             delete_product()
 
         elif choice == "6":
-            search_barcode()
-
-        elif choice == "7":
             search_name()
 
-        elif choice == "8":
+        elif choice == "7":
             print("Goodbye!")
             break
 

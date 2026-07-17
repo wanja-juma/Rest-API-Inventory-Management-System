@@ -1,42 +1,14 @@
-
 import requests
 
-from config import (
-    OPENFOODFACTS_BARCODE_URL,
-    OPENFOODFACTS_NAME_URL
-)
-
-
-def fetch_product_by_barcode(barcode):
-    
-    url = OPENFOODFACTS_BARCODE_URL.format(barcode)
-
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-
-        data = response.json()
-
-        if data.get("status") != 1:
-            return None
-
-        product = data.get("product", {})
-
-        return {
-            "product_name": product.get("product_name", "Unknown"),
-            "brand": product.get("brands", "Unknown"),
-            "ingredients": product.get(
-                "ingredients_text",
-                "Not Available"
-            )
-        }
-
-    except requests.RequestException:
-        return None
+from config import OPENFOODFACTS_URL
 
 
 def fetch_product_by_name(name):
-    
+    """
+    Search OpenFoodFacts for products matching the given name.
+    Returns a list of matching products.
+    """
+
     params = {
         "search_terms": name,
         "search_simple": 1,
@@ -45,9 +17,8 @@ def fetch_product_by_name(name):
     }
 
     try:
-
         response = requests.get(
-            OPENFOODFACTS_NAME_URL,
+            OPENFOODFACTS_URL,
             params=params,
             timeout=10
         )
@@ -56,8 +27,31 @@ def fetch_product_by_name(name):
 
         data = response.json()
 
-        return data.get("products", [])
+        products = data.get("products", [])
+
+        results = []
+
+        for product in products[:10]:
+            results.append({
+                "product_name": product.get(
+                    "product_name",
+                    "Unknown"
+                ),
+                "brand": product.get(
+                    "brands",
+                    "Unknown"
+                ),
+                "ingredients": product.get(
+                    "ingredients_text",
+                    "Not Available"
+                ),
+                "barcode": product.get(
+                    "code",
+                    "Unknown"
+                )
+            })
+
+        return results
 
     except requests.RequestException:
-
         return []
