@@ -1,1 +1,37 @@
-[]
+[
+    {
+        "id": 1,
+        "product_name": "Sugar",
+        "brand": "Mumias",
+        "price": 180.0,
+        "stock": 25
+    },
+    {
+        "id": 2,
+        "product_name": "Maize Flour",
+        "brand": "Jogoo",
+        "price": 180.0,
+        "stock": 30
+    },
+    {
+        "id": 3,
+        "product_name": "Cookies",
+        "brand": "Nuvita",
+        "price": 120.0,
+        "stock": 35
+    },
+    {
+        "id": 4,
+        "product_name": "Tea Leaves",
+        "brand": "Kericho Gold",
+        "price": 145.0,
+        "stock": 35
+    },
+    {
+        "id": 5,
+        "product_name": "Coffee",
+        "brand": "Dormans",
+        "price": 300.0,
+        "stock": 15
+    }
+]
