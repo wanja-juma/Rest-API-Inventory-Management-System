@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 
-from data import inventory
-from helpers import fetch_product_by_name
+from data import inventory, save_inventory
+from helpers import (fetch_product_by_name)
 
 app = Flask(__name__)
 
@@ -77,6 +77,8 @@ def add_item():
 
     inventory.append(item)
 
+    save_inventory(inventory)
+
     print(inventory)
 
     return jsonify(item), 201
@@ -118,6 +120,8 @@ def update_item(item_id):
     if "stock" in data:
         item["stock"] = data["stock"]
 
+    save_inventory(inventory)
+
     return jsonify(item), 200
 
 # Delete product
@@ -137,9 +141,28 @@ def delete_item(item_id):
 
     inventory.remove(item)
 
+    save_inventory(inventory)
+
     return jsonify({
         "message": "Product deleted successfully"
     }), 200
+
+# View openfoodfacts product
+
+@app.route("/openfoodfacts/<category>", methods=["GET"])
+def browse_openfoodfacts(category):
+
+    products = fetch_product_by_name(
+        category,
+        page_size=50
+    )
+
+    if not products:
+        return jsonify({
+            "error": "No products found."
+        }), 404
+
+    return jsonify(products), 200
 
 # Search openfoodfacts
 

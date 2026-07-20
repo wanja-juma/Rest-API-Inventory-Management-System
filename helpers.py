@@ -2,18 +2,31 @@ import requests
 
 from config import OPENFOODFACTS_URL
 
-def fetch_product_by_name(name):
+
+def fetch_product_by_name(name, page_size=50):
+
     params = {
         "search_terms": name,
         "search_simple": 1,
         "action": "process",
-        "json": 1
+        "json": 1,
+        "page": 1,
+        "page_size": page_size
+    }
+
+    headers = {
+        "User-Agent": (
+        "InventoryManagementSystem/1.0 "
+        "(Educational Project; Python Requests)"
+    )
     }
 
     try:
+
         response = requests.get(
             OPENFOODFACTS_URL,
             params=params,
+            headers=headers,
             timeout=10
         )
 
@@ -21,12 +34,8 @@ def fetch_product_by_name(name):
 
         data = response.json()
 
-        products = data.get("products", [])
-
-        results = []
-
-        for product in products[:10]:
-            results.append({
+        return [
+            {
                 "product_name": product.get(
                     "product_name",
                     "Unknown"
@@ -38,14 +47,10 @@ def fetch_product_by_name(name):
                 "ingredients": product.get(
                     "ingredients_text",
                     "Not Available"
-                ),
-                "barcode": product.get(
-                    "code",
-                    "Unknown"
                 )
-            })
-
-        return results
+            }
+            for product in data.get("products", [])
+        ]
 
     except requests.RequestException:
         return []

@@ -5,15 +5,64 @@ BASE_URL = "http://127.0.0.1:5000"
 
 def display_menu():
     print("=== Inventory Management System ===")
-    print("1. View Inventory")
-    print("2. View Product")
+    print("1. View My Inventory")
+    print("2. View My Product")
     print("3. Add Product")
     print("4. Update Product")
     print("5. Delete Product")
-    print("6. Search OpenFoodFacts")
-    print("7. Exit")
+    print("6. Browse OpenFoodFacts")
+    print("7. Search OpenFoodFacts")
+    print("8. Exit")
+def browse_openfoodfacts():
 
+    print("\nBrowse OpenFoodFacts")
+    print("-" * 40)
+    print("1. Milk")
+    print("2. Bread")
+    print("3. Chocolate")
+    print("4. Coffee")
+    print("5. Juice")
+    print("6. Biscuits")
+    print("7. Pasta")
+    print("8. Rice")
 
+    choice = input("\nChoose a category: ")
+
+    categories = {
+        "1": "milk",
+        "2": "bread",
+        "3": "chocolate",
+        "4": "coffee",
+        "5": "juice",
+        "6": "biscuits",
+        "7": "pasta",
+        "8": "rice"
+    }
+
+    if choice not in categories:
+        print("Invalid choice.")
+        return
+
+    response = requests.get(
+        f"{BASE_URL}/openfoodfacts/{categories[choice]}"
+    )
+
+    if response.status_code != 200:
+        print(response.json()["error"])
+        return
+
+    products = response.json()
+
+    print("\nProducts Found")
+    print("=" * 70)
+
+    for index, product in enumerate(products, start=1):
+
+        print(f"{index}. {product['product_name']}")
+        print(f"   Brand: {product['brand']}")
+        print()
+
+    
 # View all products
 
 def view_inventory():
@@ -74,7 +123,6 @@ def view_product():
         print("Cannot connect to Flask server.")
 
 # Add product
-
 
 def add_product():
 
@@ -139,7 +187,7 @@ def update_product():
 
     ingredients = input(
         "New Ingredients (leave blank to skip): "
-    )
+   )
 
     if ingredients:
         update_data["ingredients"] = ingredients
@@ -191,7 +239,6 @@ def update_product():
 
 # Delete product
 
-
 def delete_product():
 
     product_id = input("Enter Product ID: ")
@@ -214,7 +261,6 @@ def delete_product():
         print("Cannot connect to Flask server.")
 
 # Search openfoodfacts
-
 
 def search_name():
 
@@ -245,10 +291,7 @@ def search_name():
                 print(
                     f"Ingredients: {product['ingredients']}"
                 )
-                print(
-                    f"Barcode: {product['barcode']}"
-                )
-
+                
                 print("-" * 70)
 
         else:
@@ -258,9 +301,7 @@ def search_name():
     except requests.ConnectionError:
         print("Cannot connect to Flask server.")
 
-
 # Main menu
-
 
 def main():
 
@@ -286,14 +327,17 @@ def main():
             delete_product()
 
         elif choice == "6":
-            search_name()
+            browse_openfoodfacts()
 
         elif choice == "7":
+            search_name()
+
+        elif choice == "8":
             print("Goodbye!")
             break
 
         else:
-            print("Invalid option. Please try again.")
+            print("Invalid option.")
 
 
 if __name__ == "__main__":

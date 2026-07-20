@@ -33,7 +33,7 @@ def test_fetch_product_by_name_success(mock_get):
     assert result[0]["product_name"] == "Milk"
     assert result[0]["brand"] == "Brookside"
     assert result[0]["ingredients"] == "Milk"
-    assert result[0]["barcode"] == "123456789"
+
 
 # NO PRODUCTS FOUND
 
